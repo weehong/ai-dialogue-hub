@@ -1,0 +1,33 @@
+services:
+  # AI Consultant Bot
+  facto:
+    image: ${DOCKER_USER:-yourusername}/facto-bot:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+
+  # Message Logger Bot
+  logta:
+    image: ${DOCKER_USER:-yourusername}/logta-bot:${TAG:-latest}
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # MongoDB for message storage
+  mongodb:
+    image: mongo:7
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongo_data:
